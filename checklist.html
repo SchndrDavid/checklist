@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist příprava SZZ + přijímačky</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    padding: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: #6e6e73;
+    margin-bottom: 24px;
+    font-size: 15px;
+  }
+  .progress-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .progress-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  .progress-bar {
+    background: #e5e5ea;
+    border-radius: 8px;
+    height: 12px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #34c759 0%, #30b350 100%);
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+  .countdown {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .countdown-box {
+    flex: 1;
+    min-width: 200px;
+    background: #f5f5f7;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .countdown-label {
+    font-size: 12px;
+    color: #6e6e73;
+    margin-bottom: 4px;
+  }
+  .countdown-value {
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .countdown-box.urgent .countdown-value {
+    color: #ff3b30;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: #e5e5ea;
+    padding: 4px;
+    border-radius: 10px;
+    width: fit-content;
+  }
+  .tab {
+    padding: 10px 20px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1d1d1f;
+    background: transparent;
+    border: none;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .tab:hover:not(.active) {
+    background: rgba(255,255,255,0.5);
+  }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Week / Topic cards */
+  .week, .topic {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .week-header, .topic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .week-title, .topic-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .week-progress, .topic-progress {
+    font-size: 13px;
+    color: #6e6e73;
+  }
+  .week-toggle, .topic-toggle {
+    color: #6e6e73;
+    font-size: 14px;
+    transition: transform 0.2s;
+  }
+  .week.collapsed .week-content,
+  .topic.collapsed .topic-content { display: none; }
+  .week.collapsed .week-toggle,
+  .topic.collapsed .topic-toggle { transform: rotate(-90deg); }
+
+  /* Day blocks */
+  .day {
+    padding: 14px;
+    border-radius: 8px;
+    background: #fafafa;
+    margin-bottom: 10px;
+    border-left: 3px solid #e5e5ea;
+    transition: all 0.2s;
+  }
+  .day.completed {
+    background: #e8f5e9;
+    border-left-color: #34c759;
+  }
+  .day-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .day-checkbox {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .day-content {
+    flex: 1;
+  }
+  .day-date {
+    font-size: 12px;
+    color: #6e6e73;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .day-title {
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .day.completed .day-title {
+    text-decoration: line-through;
+    color: #6e6e73;
+  }
+  .day-material {
+    font-size: 13px;
+    color: #6e6e73;
+    font-style: italic;
+  }
+
+  /* Topic subchapter */
+  .subchapter {
+    margin-bottom: 12px;
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 14px;
+    border-left: 3px solid #007aff;
+  }
+  .subchapter-title {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 8px;
+    color: #1d1d1f;
+  }
+  .subchapter-count {
+    font-size: 12px;
+    color: #6e6e73;
+    font-weight: 400;
+    margin-left: 8px;
+  }
+
+  /* Subtasks */
+  .subtasks {
+    margin-top: 10px;
+    margin-left: 34px;
+    padding-left: 12px;
+    border-left: 2px solid #e5e5ea;
+  }
+  .subtask, .topic-task {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .subtask input[type="checkbox"],
+  .topic-task input[type="checkbox"] {
+    cursor: pointer;
+  }
+  .subtask label, .topic-task label {
+    cursor: pointer;
+    flex: 1;
+  }
+  .subtask.completed label,
+  .topic-task.completed label {
+    text-decoration: line-through;
+    color: #9e9e9e;
+  }
+  .task-date {
+    font-size: 11px;
+    color: #6e6e73;
+    background: #e5e5ea;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+
+  .milestone {
+    background: linear-gradient(135deg, #ff9500 0%, #ff6b35 100%);
+    color: white;
+    padding: 16px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-weight: 600;
+    text-align: center;
+    font-size: 16px;
+  }
+  .milestone.success {
+    background: linear-gradient(135deg, #34c759 0%, #30b350 100%);
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  button {
+    background: white;
+    border: 1px solid #d2d2d7;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #1d1d1f;
+    transition: all 0.15s;
+  }
+  button:hover {
+    background: #f5f5f7;
+    border-color: #1d1d1f;
+  }
+  button.primary {
+    background: #007aff;
+    color: white;
+    border-color: #007aff;
+  }
+  button.primary:hover {
+    background: #0051d5;
+    border-color: #0051d5;
+  }
+  button.danger {
+    color: #ff3b30;
+  }
+  .note {
+    background: #fff8e1;
+    border-left: 3px solid #ffb300;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .stat {
+    background: #f5f5f7;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: #6e6e73;
+    margin-top: 4px;
+  }
+  .topic-meta {
+    font-size: 12px;
+    color: #6e6e73;
+    margin-top: 4px;
+    font-style: italic;
+  }
+  @media print {
+    .controls, .week-toggle, .topic-toggle, .tabs { display: none; }
+    .week, .topic { break-inside: avoid; }
+    .view { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<h1>📚 Příprava SZZ + přijímačky</h1>
+<p class="subtitle">34 dní kondenzované přípravy (19. 5. – 22. 6. 2026)</p>
+
+<div class="progress-container">
+  <div class="progress-stats">
+    <span><strong>Celkový postup</strong></span>
+    <span id="progressText">0 / 0 (0%)</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+  </div>
+  <div class="countdown">
+    <div class="countdown-box" id="countdownPrijmacky">
+      <div class="countdown-label">Do přijímaček (18. 6.)</div>
+      <div class="countdown-value">—</div>
+    </div>
+    <div class="countdown-box" id="countdownStatnice">
+      <div class="countdown-label">Do státnic (22. 6.)</div>
+      <div class="countdown-value">—</div>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Celkem úkolů</div></div>
+    <div class="stat"><div class="stat-value" id="statDone">0</div><div class="stat-label">Hotovo</div></div>
+    <div class="stat"><div class="stat-value" id="statDays">0</div><div class="stat-label">Dní zbývá</div></div>
+    <div class="stat"><div class="stat-value" id="statPace">—</div><div class="stat-label">Tempo (úkolů/den)</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-view="by-day" onclick="switchView('by-day')">📅 Podle dnů</button>
+  <button class="tab" data-view="by-topic" onclick="switchView('by-topic')">📚 Podle okruhů (1–11)</button>
+</div>
+
+<div class="controls">
+  <button onclick="expandAll()">Rozbalit vše</button>
+  <button onclick="collapseAll()">Sbalit vše</button>
+  <button onclick="window.print()">🖨️ Tisk</button>
+  <button class="primary" onclick="exportProgress()">📤 Export postupu (JSON)</button>
+  <button onclick="document.getElementById('importFile').click()">📥 Import</button>
+  <input type="file" id="importFile" style="display:none" accept=".json" onchange="importProgress(event)">
+  <button class="danger" onclick="resetAll()">🔄 Reset</button>
+</div>
+
+<div class="note">
+  💡 <strong>Postup se ukládá automaticky</strong> ve tvém prohlížeči. Odškrtneš pojem v jednom pohledu, projeví se i ve druhém. Doporučuji si postup občas vyexportovat.
+</div>
+
+<div id="view-by-day" class="view active"></div>
+<div id="view-by-topic" class="view"></div>
+
+<script>
+// ============================================================================
+// PLÁN PODLE DNŮ (Zkondenzováno na ~4h/den + lehké dny)
+// ============================================================================
+
+const plan = [
+  {
+    week: "Týden 1 (Út 19. 5. – Ne 24. 5.)",
+    theme: "Databáze + Softwarové inženýrství",
+    days: [
+      { id:"d_db1", date: "Út 19.5", title: "DB: ER modely a Normální formy", material: "AIN_komplet 5.1–5.6", subtasks: [
+        { id:"db_entita",      text:"Definovat entita, atribut, vztah" },
+        { id:"db_kardinality", text:"Pochopit kardinality 1:1, 1:N, M:N" },
+        { id:"db_parcialita",  text:"Parcialita vztahu (volitelnost)" },
+        { id:"db_transformace4", text:"Pravidla transformace KSD→relační" },
+        { id:"db_generalizace", text:"Generalizace/specializace — 3 varianty" },
+        { id:"db_er_eshop",    text:"Nakreslit ER pro fiktivní e-shop" },
+        { id:"db_p3a",         text:"P3A — princip tří architektur" },
+        { id:"db_1nf",   text:"1NF — atomické hodnoty" },
+        { id:"db_2nf",   text:"2NF — celý PK" },
+        { id:"db_3nf",   text:"3NF — žádné tranzitivní závislosti" },
+        { id:"db_bcnf",  text:"BCNF, 4NF, 5NF" },
+      ]},
+      { id:"d_db2", date: "St 20.5", title: "DB: SQL, Transakce a NoSQL", material: "AIN_komplet 5.3, 5.7–5.9", subtasks: [
+        { id:"db_sql_select", text:"SQL: SELECT, WHERE, ORDER BY" },
+        { id:"db_sql_join",   text:"SQL: JOIN typy" },
+        { id:"db_sql_group",  text:"SQL: GROUP BY, HAVING, agregace" },
+        { id:"db_jazyky",     text:"Databázové jazyky — PL/SQL, OQL" },
+        { id:"db_acid",   text:"ACID vlastnosti" },
+        { id:"db_zamky",  text:"Zámky, deadlock" },
+        { id:"db_olap",   text:"OLTP vs OLAP" },
+        { id:"db_indexy", text:"Indexy — B-strom, hash" },
+        { id:"db_nosql4", text:"NoSQL kategorie (4 typy)" },
+        { id:"db_cap",    text:"CAP teorém, BASE" },
+        { id:"db_dbs",    text:"DBS = SŘBD + databáze" },
+      ]},
+      { id:"d_sw1", date: "Čt 21.5", title: "SW: UML a Návrhové vzory", material: "AIN_komplet 4.1–4.2", subtasks: [
+        { id:"sw_class",     text:"Class diagram + viditelnost" },
+        { id:"sw_class_3lvl", text:"3 úrovně diagramu tříd" },
+        { id:"sw_usecase",   text:"Use case diagram" },
+        { id:"sw_sequence",  text:"Sequence diagram" },
+        { id:"sw_activity",  text:"Activity diagram" },
+        { id:"sw_state",     text:"State diagram" },
+        { id:"sw_singleton",  text:"Singleton" },
+        { id:"sw_factory",    text:"Factory Method, Abstract Factory" },
+        { id:"sw_builder",    text:"Builder, Prototype" },
+        { id:"sw_observer",   text:"Observer" },
+        { id:"sw_strategy",   text:"Strategy" },
+        { id:"sw_mediator",   text:"Mediator" },
+        { id:"sw_strukturalni", text:"Strukturální vzory (Adapter, Bridge...)" },
+        { id:"sw_mvc",        text:"MVC" },
+        { id:"sw_pecinovsky", text:"Pecinovského vzory" },
+      ]},
+      { id:"d_sw2", date: "Pá 22.5", title: "SW: Metodiky budování IS a kvalita", material: "AIN_komplet 4.3–4.4", subtasks: [
+        { id:"sw_rig_vs_agile", text:"Rigorózní vs agilní metodiky" },
+        { id:"sw_vodopad",   text:"Vodopádový model" },
+        { id:"sw_iterativni", text:"Iterativní a inkrementální" },
+        { id:"sw_spiralovy", text:"Spirálový model" },
+        { id:"sw_rup",       text:"RUP — 4 fáze, 9 disciplín" },
+        { id:"sw_open_eup",  text:"OPEN, EUP" },
+        { id:"sw_test_levels", text:"Úrovně testů" },
+        { id:"sw_tdd",       text:"TDD cyklus" },
+        { id:"sw_furps",     text:"FURPS+" },
+        { id:"sw_cmmi",      text:"CMMI 5 úrovní" },
+        { id:"sw_pdca",      text:"PDCA cyklus" },
+        { id:"sw_iso9001",   text:"ISO 9001" },
+        { id:"sw_sqa",       text:"SQA praktiky" },
+      ]},
+      { id:"d_rev1", date: "So 23.5", title: "🌱 Lehký den: Opáčko DB a SW", material: "Rychlý průlet (30-60 min)", subtasks: [
+        { id:"rev_er",       text:"🔄 Revize: Zkusit nakreslit ER" },
+        { id:"rev_vzory",    text:"🔄 Revize: Vyjmenovat 5 návrhových vzorů" },
+      ]},
+      { id:"d_java", date: "Ne 24.5", title: "Java: OOP a Funkcionální prvky", material: "AIN_komplet 3", subtasks: [
+        { id:"j_zapouzdreni", text:"Zapouzdření" },
+        { id:"j_dedicnost",   text:"Dědičnost" },
+        { id:"j_polymorfismus", text:"Polymorfismus" },
+        { id:"j_abstrakce",   text:"Abstrakce" },
+        { id:"j_trida_instance", text:"Třída vs instance" },
+        { id:"j_modifikatory", text:"Modifikátory přístupu" },
+        { id:"j_tdd",         text:"TDD cyklus v Javě" },
+        { id:"j_junit",       text:"JUnit základy" },
+        { id:"j_funkcni_rozh", text:"Funkční rozhraní" },
+        { id:"j_lambda",       text:"Lambda syntaxe" },
+        { id:"j_streams_ops",  text:"Streams operace" },
+        { id:"j_streams_typy", text:"Průběžné vs koncové operace" },
+        { id:"j_funkcni_par",  text:"Funkcionální paradigma" },
+      ]},
+    ]
+  },
+  {
+    week: "Týden 2 (Po 25. 5. – Ne 31. 5.)",
+    theme: "Sítě, ICT a Analýza systémů",
+    days: [
+      { id:"d_ict1", date: "Po 25.5", title: "ICT: Základy, IP, TCP/UDP", material: "AIN_komplet 2", subtasks: [
+        { id:"ict_osi",    text:"OSI vs TCP/IP model" },
+        { id:"ict_ip",     text:"IP (v4 vs v6)" },
+        { id:"ict_tcp",    text:"TCP — three-way handshake" },
+        { id:"ict_udp",    text:"UDP — kdy použít" },
+        { id:"ict_icmp",   text:"ICMP — ping, traceroute" },
+        { id:"ict_dns",    text:"DNS — princip, záznamy" },
+        { id:"ict_dnssec", text:"DNSSEC" },
+        { id:"ict_dhcp",   text:"DHCP" },
+        { id:"ict_http",   text:"HTTP vs HTTPS, metody" },
+        { id:"ict_ssh",    text:"SSH" },
+        { id:"ict_email",  text:"Email (SMTP, POP3, IMAP)" },
+        { id:"ict_www",    text:"WWW (URI, HTTP, HTML)" },
+        { id:"ict_web_srv", text:"Backend vs Frontend tech" },
+        { id:"ict_session", text:"Bezstavovost, cookies, sessions" },
+      ]},
+      { id:"d_agile", date: "Út 26.5", title: "Analýza: Agilní metodiky a DevOps", material: "AIN_komplet 10.6", subtasks: [
+        { id:"ag_manifesto",  text:"Agile Manifesto" },
+        { id:"ag_scrum_role", text:"Scrum role" },
+        { id:"ag_scrum_events", text:"Scrum eventy" },
+        { id:"ag_scrum_artefakty", text:"Scrum artefakty" },
+        { id:"ag_3pillars",   text:"3 pilíře Scrumu" },
+        { id:"ag_xp",         text:"XP praktiky" },
+        { id:"ag_kanban",     text:"Kanban" },
+        { id:"ag_dsdm",       text:"Ostatní (DSDM, Lean...)" },
+        { id:"ag_devops",     text:"DevOps a CI/CD" },
+      ]},
+      { id:"d_arch_mmdis", date: "St 27.5", title: "Analýza: Architektury IS a MMDIS", material: "AIN_komplet 10.7–10.9", subtasks: [
+        { id:"arch_togaf",  text:"TOGAF ADM" },
+        { id:"arch_zachman", text:"Zachman Framework" },
+        { id:"arch_mda",    text:"MDA (CIM/PIM/PSM)" },
+        { id:"arch_soa",    text:"SOA principy" },
+        { id:"arch_micro",  text:"Microservices" },
+        { id:"arch_layers", text:"Vrstvová architektura" },
+        { id:"mm_alignment", text:"Propojení IT a businessu" },
+        { id:"mm_principy",  text:"MMDIS 11 principů" },
+        { id:"mm_dimenze",   text:"MMDIS 9 dimenzí" },
+        { id:"mm_faze",      text:"MMDIS 9 fází" },
+        { id:"mm_iasw",      text:"IASW vs TASW" },
+        { id:"mm_outsource", text:"Outsourcing varianty" },
+      ]},
+      { id:"d_bpm", date: "Čt 28.5", title: "Analýza: Modelování procesů", material: "AIN_komplet 10.5", subtasks: [
+        { id:"pr_bpmn_basic",  text:"BPMN základy" },
+        { id:"pr_bpmn_pools",  text:"BPMN pools/lanes" },
+        { id:"pr_bpmn_artif",  text:"BPMN artefakty" },
+        { id:"pr_epc",         text:"EPC diagram" },
+        { id:"pr_epc_vs_bpmn", text:"BPMN vs EPC" },
+        { id:"pr_dfd",         text:"DFD diagram datových toků" },
+        { id:"pr_raci",        text:"RACI matice" },
+        { id:"pr_kbpr",        text:"KBPR" },
+        { id:"pr_cmm",         text:"CMM pro zralost" },
+      ]},
+      { id:"d_rev2", date: "Pá 29.5", title: "🌱 Lehký den: Opáčko Analýzy", material: "Rychlý průlet (30-60 min)", subtasks: [
+        { id:"rev_arch",   text:"🔄 Revize: Vyjmenovat architektury" },
+        { id:"rev_bpmn",   text:"🔄 Revize: Zkusit si BPMN proces" },
+      ]},
+      { id:"d_pis1", date: "So 30.5", title: "Podnikové IS: Evoluce, ERP, Implementace", material: "AIN_komplet 9.1–9.3, 9.5", subtasks: [
+        { id:"pis_evoluce", text:"Vývoj MRP → ERP II" },
+        { id:"pis_moduly",  text:"Základní moduly ERP" },
+        { id:"pis_finance", text:"Finanční část" },
+        { id:"pis_logistika", text:"Logistika a sklad" },
+        { id:"pis_impl_etapy", text:"Etapy implementace" },
+        { id:"pis_proto",   text:"Prototypování" },
+        { id:"pis_custom",  text:"Customizace" },
+      ]},
+      { id:"d_pis2", date: "Ne 31.5", title: "Podnikové IS: CRM, SCM, Trendy", material: "AIN_komplet 9.4–9.8", subtasks: [
+        { id:"pis_crm",     text:"Typy CRM" },
+        { id:"pis_scm",     text:"SCM a model SCOR" },
+        { id:"pis_mes",     text:"MES systémy" },
+        { id:"pis_kriteria", text:"Výběr ERP" },
+        { id:"pis_trh",     text:"Trh PIS" },
+        { id:"pis_premise", text:"On-premise vs SaaS" },
+        { id:"pis_cloud3",  text:"Cloud modely" },
+        { id:"pis_soa",     text:"SOA a PIS" },
+        { id:"pis_trendy",  text:"Trendy (Mobil, IoT...)" },
+      ]},
+    ]
+  },
+  {
+    week: "Týden 3 (Po 1. 6. – Ne 7. 6.)",
+    theme: "Datová Analytika, BI, ML a Věda",
+    days: [
+      { id:"d_da", date: "Po 1.6", title: "Datová analytika a kvalita dat", material: "AIN_komplet 6.1–6.4", subtasks: [
+        { id:"da_pridana",   text:"Hodnota dat pro business" },
+        { id:"da_pojmy",     text:"Základní pojmy a rozdíly" },
+        { id:"da_zdroje",    text:"Zdroje dat" },
+        { id:"da_kvalita6",  text:"6 dimenzí kvality dat" },
+        { id:"da_dim_metric", text:"Dimenze, metriky, granularita" },
+        { id:"da_lake",      text:"Data Lake" },
+        { id:"da_agreg",   text:"Agregovaná data" },
+        { id:"da_bsc",     text:"KPI a Balanced Scorecard" },
+      ]},
+      { id:"d_bi", date: "Út 2.6", title: "Business Intelligence a OLAP", material: "AIN_komplet 6.5–6.6", subtasks: [
+        { id:"bi_oltp",    text:"OLTP jako zdroj" },
+        { id:"bi_etl",     text:"ETL proces" },
+        { id:"bi_etl_elt", text:"ETL vs ELT" },
+        { id:"bi_dwh",     text:"Datový sklad (DWH)" },
+        { id:"bi_mart",    text:"Data Mart" },
+        { id:"bi_olap",    text:"OLAP kostky" },
+        { id:"bi_inmon",   text:"Inmon vs Kimball" },
+        { id:"bi_star",      text:"Star schema" },
+        { id:"bi_snowflake", text:"Snowflake schema" },
+        { id:"bi_fakt_dim",  text:"Faktová tabulka vs dimenze" },
+        { id:"bi_olap_ops",  text:"OLAP operace" },
+        { id:"bi_molap",     text:"MOLAP, ROLAP, HOLAP" },
+        { id:"da_report",  text:"Reporting vs Dashboarding" },
+        { id:"da_self",    text:"Self-service BI" },
+      ]},
+      { id:"d_ml1", date: "St 3.6", title: "Machine Learning: Základy a evaluace", material: "AIN_komplet 7.1, 7.4", subtasks: [
+        { id:"ml_pojmy",        text:"Základní pojmy AI/ML" },
+        { id:"ml_supervised",   text:"Učení s učitelem" },
+        { id:"ml_unsupervised", text:"Učení bez učitele" },
+        { id:"ml_dzd_ulohy",    text:"Typické úlohy" },
+        { id:"ml_crispdm",      text:"Metodika CRISP-DM" },
+        { id:"ml_confusion",    text:"Confusion matrix" },
+        { id:"ml_metriky",      text:"Metriky klasifikace (Accuracy atd.)" },
+        { id:"ml_roc",          text:"ROC a AUC" },
+        { id:"ml_overfit",      text:"Overfitting/underfitting" },
+        { id:"ml_cv",           text:"Cross-validation" },
+      ]},
+      { id:"d_ml2", date: "Čt 4.6", title: "Machine Learning: Algoritmy a zpracování textu", material: "AIN_komplet 7.3–7.9", subtasks: [
+        { id:"ml_stromy",    text:"Rozhodovací stromy" },
+        { id:"ml_ensemble",  text:"Ensemble (Random Forest...)" },
+        { id:"ml_clustering", text:"Shlukování (k-means...)" },
+        { id:"ml_asociace",  text:"Asociační pravidla" },
+        { id:"ml_guha",      text:"GUHA metoda" },
+        { id:"ml_pres_upl",  text:"Přesnost vs úplnost u textu" },
+        { id:"ml_boolean",   text:"Booleovský model vyhledávání" },
+        { id:"ml_fuzzy",     text:"Fuzzy rozšíření" },
+        { id:"ml_geom",      text:"Geometrické rozšíření" },
+        { id:"ml_vektor",    text:"Vektorový model" },
+        { id:"ml_pagerank",  text:"PageRank" },
+        { id:"ml_tfidf",     text:"TF-IDF" },
+        { id:"ml_regex",     text:"Regulární výrazy základy" },
+        { id:"ml_regex_lookaround", text:"Regex pokročilé" },
+      ]},
+      { id:"d_rev3", date: "Pá 5.6", title: "🌱 Lehký den: Opáčko Analytiky a ERP", material: "Rychlý průlet (30-60 min)", subtasks: [
+        { id:"rev_oltp",    text:"🔄 Revize: OLTP vs OLAP" },
+        { id:"rev_erp_mod", text:"🔄 Revize: Moduly ERP" },
+      ]},
+      { id:"d_veda", date: "So 6.6", title: "Vědecká práce", material: "AIN_komplet 1", subtasks: [
+        { id:"v_imrad",     text:"Struktura IMRaD" },
+        { id:"v_clenenei",  text:"Členění práce" },
+        { id:"v_cil",       text:"Cíle a hypotézy" },
+        { id:"v_prameny",   text:"Prameny a informační zdroje" },
+        { id:"v_kvant",     text:"Kvantitativní výzkum" },
+        { id:"v_kval",      text:"Kvalitativní výzkum" },
+        { id:"v_citace",    text:"Citace a plagiátorství" },
+      ]},
+      { id:"d_gov1", date: "Ne 7.6", title: "IT Governance: Alignment a základy", material: "AIN_komplet 8.1–8.5", subtasks: [
+        { id:"gov_vs_mgmt", text:"Governance vs Management" },
+        { id:"gov_edm",     text:"EDM cyklus" },
+        { id:"gov_pbrm",    text:"PBRM cyklus" },
+        { id:"gov_4obl",    text:"4 oblasti EGIT" },
+        { id:"gov_pillar1", text:"Pilíř 1: Struktury" },
+        { id:"gov_pillar2", text:"Pilíř 2: Procesy" },
+        { id:"gov_pillar3", text:"Pilíř 3: Relační mechanismy" },
+        { id:"gov_sam",       text:"Henderson & Venkatraman SAM" },
+        { id:"gov_sam_fit",   text:"Fit vs integration" },
+        { id:"gov_4perspect", text:"4 perspektivy alignmentu" },
+        { id:"gov_samm",      text:"Luftmanův SAMM" },
+        { id:"gov_it_bsc",    text:"IT Balanced Scorecard" },
+        { id:"gov_busi_case", text:"Business Case proces" },
+      ]},
+    ]
+  },
+  {
+    week: "Týden 4 (Po 8. 6. – Ne 14. 6.)",
+    theme: "Governance, Bezpečnost a Projekty",
+    days: [
+      { id:"d_gov2", date: "Po 8.6", title: "IT Governance: COBIT a ITIL", material: "AIN_komplet 8.6–8.7", subtasks: [
+        { id:"cob_5princ",  text:"5 principů COBIT 5" },
+        { id:"cob_goals",   text:"Goals cascade" },
+        { id:"cob_7enabl",  text:"7 enablerů" },
+        { id:"cob_domeny",  text:"Domény COBITu" },
+        { id:"cob_capab",   text:"Capability Model" },
+        { id:"itil_v3",     text:"ITIL v3 základ" },
+        { id:"itil_svs",    text:"ITIL 4 Service Value System" },
+        { id:"itil_7princ", text:"7 principů ITIL 4" },
+        { id:"itil_svc",    text:"Service Value Chain" },
+        { id:"itil_4dim",   text:"4 dimenze ITIL 4" },
+        { id:"itil_34prakt", text:"34 praktik" },
+        { id:"itil_reakce", text:"Na co reaguje ITIL 4" },
+      ]},
+      { id:"d_proj", date: "Út 9.6", title: "Řízení IT projektů", material: "AIN_komplet 10.10", subtasks: [
+        { id:"proj_def",     text:"Projekt vs proces" },
+        { id:"proj_troji",   text:"Trojimperativ" },
+        { id:"proj_pmbok",   text:"PMBOK" },
+        { id:"proj_prince2", text:"PRINCE2" },
+        { id:"proj_agile",   text:"Agilní řízení projektů" },
+        { id:"proj_nastroje", text:"Projektové dokumenty" },
+      ]},
+      { id:"d_sec1", date: "St 10.6", title: "Bezpečnost: Kryptografie a šifry", material: "AIN_komplet 11.2–11.4", subtasks: [
+        { id:"sec_kryptolog",  text:"Kryptologie základ" },
+        { id:"sec_cile",       text:"Cíle kryptografie" },
+        { id:"sec_primitiva",  text:"Kryptografická primitiva" },
+        { id:"sec_cia",        text:"CIA triáda" },
+        { id:"sec_kerckhoffs", text:"Kerckhoffsovy principy" },
+        { id:"sec_proud_blok", text:"Proudové vs blokové šifry" },
+        { id:"sec_vernam",     text:"Vernamova šifra" },
+        { id:"sec_sp_sit",     text:"Substitučně-permutační síť" },
+        { id:"sec_mody",       text:"Módy šifrování" },
+        { id:"sec_aead",       text:"AEAD" },
+        { id:"sec_hash",       text:"Hashovací funkce" },
+        { id:"sec_hash_vlast", text:"Vlastnosti hashe" },
+        { id:"sec_mac",        text:"MAC/HMAC" },
+      ]},
+      { id:"d_sec2", date: "Čt 11.6", title: "Bezpečnost: PKI a Identita", material: "AIN_komplet 11.5–11.9", subtasks: [
+        { id:"sec_asym",       text:"Asymetrická kryptografie" },
+        { id:"sec_dh",         text:"Diffie-Hellman" },
+        { id:"sec_fs",         text:"Forward Secrecy" },
+        { id:"sec_podpis",     text:"Digitální podpis" },
+        { id:"sec_cert",       text:"Certifikáty X.509" },
+        { id:"sec_eidas",      text:"eIDAS nařízení" },
+        { id:"sec_3podpisy",   text:"3 typy podpisů v ČR" },
+        { id:"sec_5pojmu",     text:"Identifikace/autentizace..." },
+        { id:"sec_doklady",    text:"Kvalita dokladů" },
+        { id:"sec_3faktory",   text:"3 faktory autentizace" },
+        { id:"sec_mfa",        text:"MFA/2FA" },
+        { id:"sec_hesla",      text:"Ukládání hesel" },
+        { id:"sec_modely",     text:"MAC/DAC/RBAC/ABAC" },
+      ]},
+      { id:"d_rev4", date: "Pá 12.6", title: "🌱 Lehký den: Opáčko Governance a Sec", material: "Rychlý průlet (30-60 min)", subtasks: [
+        { id:"rev_cobit",    text:"🔄 Revize: COBIT 5" },
+        { id:"rev_itil",     text:"🔄 Revize: ITIL v3 vs 4" },
+      ]},
+      { id:"d_sec3", date: "So 13.6", title: "Bezpečnost: Sítě a legislativa", material: "AIN_komplet 11.10–11.13", subtasks: [
+        { id:"sec_fw",      text:"Firewally" },
+        { id:"sec_proxy",   text:"Proxy servery" },
+        { id:"sec_nat",     text:"NAT" },
+        { id:"sec_ids",     text:"IDS/IPS" },
+        { id:"sec_honey",   text:"Honeypoty" },
+        { id:"sec_tls",     text:"TLS handshake" },
+        { id:"sec_vpn",     text:"VPN" },
+        { id:"sec_zt",      text:"Zero Trust" },
+        { id:"sec_owasp",   text:"OWASP Top 10" },
+        { id:"sec_gdpr",    text:"GDPR" },
+        { id:"sec_nis2",    text:"NIS2" },
+      ]},
+      { id:"d_gen1", date: "Ne 14.6", title: "Generálka nanečisto", material: "Opáčko slabin", subtasks: [
+        { id:"sec_test",    text:"📋 Cvičný test nanečisto" },
+        { id:"sec_final",   text:"🔄 Vypsat si aktuálně nejslabší místa" },
+      ]},
+    ]
+  },
+  {
+    week: "Týden 5 (Po 15. 6. – Po 22. 6.)",
+    theme: "Finální revize, Přijímačky, Obhajoba BP a STÁTNICE",
+    days: [
+      { id:"d_rev1", date: "Po 15.6", title: "🌱 Finální revize okruhů 1–4", material: "Rychlý průlet vlastními materiály", subtasks: [
+        { id:"rev_o1",  text:"Okruh 1: Základy odborné práce (IMRaD, kvant/kval)" },
+        { id:"rev_o2",  text:"Okruh 2: ICT (TCP/IP, DNS, SSH, email, WWW)" },
+        { id:"rev_o3",  text:"Okruh 3: Java (OOP, TDD, lambda/streams)" },
+        { id:"rev_o4",  text:"Okruh 4: SW inženýrství (UML, vzory, metodiky, kvalita)" },
+      ]},
+      { id:"d_rev2", date: "Út 16.6", title: "🌱 Finální revize okruhů 5–7", material: "Rychlý průlet vlastními materiály", subtasks: [
+        { id:"rev_o5",  text:"Okruh 5: Databáze (ER, NF, SQL, jazyky)" },
+        { id:"rev_o6",  text:"Okruh 6: Datová analytika (kvalita dat, KPI, BI)" },
+        { id:"rev_o7",  text:"Okruh 7: Zpracování informací (ML, vyhledávání, regex)" },
+      ]},
+      { id:"d_rev3", date: "St 17.6", title: "🌱 Finální revize okruhů 8–9 + odpočinek před přijímačkami", material: "Maximálně 2 hodiny", subtasks: [
+        { id:"rev_o8",  text:"Okruh 8: IT Governance (COBIT 5, ITIL 4)" },
+        { id:"rev_o9",  text:"Okruh 9: Podnikové IS (ERP, CRM, SCM, MES)" },
+        { id:"rev_chill", text:"😌 Dříve do postele, dobré jídlo" },
+      ]},
+      { id:"d_prijm", date: "Čt 18.6", title: "🎯 PŘIJÍMACÍ ZKOUŠKY NA MAGISTRA", material: "Rozbiješ to! 🍀", subtasks: [] },
+      { id:"d_rev4", date: "Pá 19.6", title: "🌱 Finální revize okruhů 10–11", material: "Po přijímačkách dokončit revize", subtasks: [
+        { id:"rev_o10", text:"Okruh 10: Analýza a návrh IS (MMDIS, BPMN, EPC)" },
+        { id:"rev_o11", text:"Okruh 11: Bezpečnost IS (kryptografie, PKI, auth, sítě)" },
+        { id:"rev_slabiny", text:"Identifikovat 3–5 nejslabších okruhů a doučit" },
+      ]},
+      { id:"d_bp1", date: "So 20.6", title: "BP: První průchod a dotazy", material: "BP a slidy", subtasks: [
+        { id:"bp_prez2",   text:"Projít celou prezentaci 2×" },
+        { id:"bp_otazky",  text:"Sepsat si krizové otázky komise" },
+        { id:"bp_slabiny", text:"Argumentace k designovým vzorům z BP" },
+        { id:"bp_demo",    text:"Zkouška dema/kódu" },
+      ]},
+      { id:"d_bp2", date: "Ne 21.6", title: "BP: Zkouška nahlas + poslední revize", material: "BP a slidy + slabá místa", subtasks: [
+        { id:"bp_nahlas",  text:"Prezentaci nadoraz změřit na čas" },
+        { id:"bp_doladit", text:"Poslední vizuální úpravy" },
+        { id:"bp_zkouska", text:"Přeříkat někomu z rodiny/kamarádovi" },
+        { id:"bp_pozn",    text:"Vytisknout poznámky" },
+        { id:"rev_final",  text:"🔄 Bleskový průlet slabými okruhy (max 1h)" },
+        { id:"rev_spat",   text:"😴 Brzy do postele!" },
+      ]},
+      { id:"d_statn", date: "Po 22.6", title: "🎯 STÁTNÍ ZKOUŠKA + OBHAJOBA BP", material: "Titul is loading... 🎓", subtasks: [] },
+    ],
+    milestone: true
+  }
+];
+
+// ============================================================================
+// POHLED PODLE OKRUHŮ (NEMĚNIT STRUKTURU ID!)
+// ============================================================================
+
+const topics = [
+  {
+    num: 1,
+    title: "Základy odborné práce",
+    literatura: "Radváková & Sigmund 2020; Walker 2013; Vymětal 2020",
+    subchapters: [
+      { title: "Struktura vědecké práce", taskIds: ["v_imrad", "v_clenenei", "v_cil"] },
+      { title: "Bibliografická data a reference", taskIds: ["v_prameny", "v_citace"] },
+      { title: "Výzkum kvantitativní a kvalitativní", taskIds: ["v_kvant", "v_kval"] },
+    ]
+  },
+  {
+    num: 2,
+    title: "Informační a komunikační technologie",
+    literatura: "Palovský 2010; Dobrovský TCP/IP+DNS",
+    subchapters: [
+      { title: "Základní protokoly internetu: IP, TCP, UDP, ICMP, DNS",
+        taskIds: ["ict_osi", "ict_ip", "ict_tcp", "ict_udp", "ict_icmp", "ict_dns", "ict_dnssec", "ict_dhcp"] },
+      { title: "Aplikační nástroje internetu: email, ssh, WWW",
+        taskIds: ["ict_email", "ict_ssh", "ict_www", "ict_http"] },
+      { title: "Základy webových informačních technologií",
+        taskIds: ["ict_web_srv", "ict_session"] },
+    ]
+  },
+  {
+    num: 3,
+    title: "Programování v Javě",
+    literatura: "Pecinovský & Pavlíčková 2021",
+    subchapters: [
+      { title: "Principy a aplikace objektového paradigma",
+        taskIds: ["j_zapouzdreni", "j_dedicnost", "j_polymorfismus", "j_abstrakce", "j_trida_instance", "j_modifikatory"] },
+      { title: "Vývoj řízený testy",
+        taskIds: ["j_tdd", "j_junit", "sw_tdd"] },
+      { title: "Prvky funkcionálního programování (lambda výrazy a streamy)",
+        taskIds: ["j_funkcni_rozh", "j_lambda", "j_streams_ops", "j_streams_typy", "j_funkcni_par"] },
+    ]
+  },
+  {
+    num: 4,
+    title: "Softwarové inženýrství",
+    literatura: "Buchalcevová UML 2013; Buchalcevová Zlepšování 2018; Pecinovský Návrhové vzory 2007",
+    subchapters: [
+      { title: "UML modelování",
+        taskIds: ["sw_class", "sw_class_3lvl", "sw_usecase", "sw_sequence", "sw_activity", "sw_state"] },
+      { title: "Návrhové vzory",
+        taskIds: ["sw_singleton", "sw_factory", "sw_builder", "sw_observer", "sw_strategy", "sw_mediator", "sw_strukturalni", "sw_mvc", "sw_pecinovsky"] },
+      { title: "Metodiky budování IS",
+        taskIds: ["sw_rig_vs_agile", "sw_vodopad", "sw_iterativni", "sw_spiralovy", "sw_rup", "sw_open_eup",
+                  "ag_manifesto", "ag_scrum_role", "ag_scrum_events", "ag_scrum_artefakty", "ag_3pillars", "ag_xp", "ag_kanban", "ag_dsdm", "ag_devops"] },
+      { title: "Řízení kvality při vývoji SW",
+        taskIds: ["sw_test_levels", "sw_furps", "sw_cmmi", "sw_pdca", "sw_iso9001", "sw_sqa"] },
+    ]
+  },
+  {
+    num: 5,
+    title: "Databáze",
+    literatura: "Chlapek et al. 2019; Donahoo 2005; Teorey 2011",
+    subchapters: [
+      { title: "Analýza, návrh a realizace databáze",
+        taskIds: ["db_dbs", "db_entita", "db_kardinality", "db_parcialita", "db_transformace4", "db_generalizace", "db_er_eshop", "db_p3a"] },
+      { title: "Datové modelování",
+        taskIds: ["db_1nf", "db_2nf", "db_3nf", "db_bcnf", "db_indexy", "db_acid", "db_zamky", "db_olap", "db_nosql4", "db_cap"] },
+      { title: "Databázové jazyky",
+        taskIds: ["db_sql_select", "db_sql_join", "db_sql_group", "db_jazyky"] },
+    ]
+  },
+  {
+    num: 6,
+    title: "Základy datové analytiky",
+    literatura: "Potančok, Pour, Chramostová 2020",
+    subchapters: [
+      { title: "Přidaná hodnota dat pro business",
+        taskIds: ["da_pridana", "da_pojmy", "da_zdroje"] },
+      { title: "Data, kvalita dat (základní pojmy a jejich důležitost)",
+        taskIds: ["da_kvalita6"] },
+      { title: "Agregovaná (odvozená) data, dimenze, metriky/KPI, granularita",
+        taskIds: ["da_dim_metric", "da_agreg", "da_bsc", "da_lake",
+                  "bi_oltp", "bi_etl", "bi_etl_elt", "bi_dwh", "bi_mart", "bi_olap", "bi_inmon",
+                  "bi_star", "bi_snowflake", "bi_fakt_dim", "bi_olap_ops", "bi_molap",
+                  "da_report", "da_self"] },
+    ]
+  },
+  {
+    num: 7,
+    title: "Zpracování informací a znalostí",
+    literatura: "Berka 2003; Rauch 1996; Goyvaerts & Levithan 2010; Holubová et al. 2015",
+    subchapters: [
+      { title: "Strojové učení a data mining",
+        taskIds: ["ml_pojmy", "ml_supervised", "ml_unsupervised", "ml_dzd_ulohy",
+                  "ml_crispdm", "ml_stromy", "ml_ensemble", "ml_clustering", "ml_asociace", "ml_guha",
+                  "ml_confusion", "ml_metriky", "ml_roc", "ml_overfit", "ml_cv"] },
+      { title: "Ukládání a vyhledávání textových informací",
+        taskIds: ["ml_pres_upl", "ml_boolean", "ml_fuzzy", "ml_geom", "ml_vektor", "ml_tfidf", "ml_pagerank"] },
+      { title: "Regulární výrazy",
+        taskIds: ["ml_regex", "ml_regex_lookaround"] },
+    ]
+  },
+  {
+    num: 8,
+    title: "IT Governance",
+    literatura: "Říhová 2020; De Haes & Van Grembergen 2015",
+    subchapters: [
+      { title: "Rozdíl mezi Governance a Management",
+        taskIds: ["gov_vs_mgmt", "gov_edm", "gov_pbrm"] },
+      { title: "Klíčové oblasti Enterprise Governance of IT",
+        taskIds: ["gov_4obl", "gov_pillar1", "gov_pillar2", "gov_pillar3",
+                  "gov_sam", "gov_sam_fit", "gov_4perspect", "gov_samm", "gov_it_bsc", "gov_busi_case"] },
+      { title: "Základní principy COBIT 5",
+        taskIds: ["cob_5princ", "cob_goals", "cob_7enabl", "cob_domeny", "cob_capab"] },
+      { title: "Na co reaguje ITIL 4 a jaké jsou rozdíly vůči ITIL 3",
+        taskIds: ["itil_v3", "itil_svs", "itil_7princ", "itil_svc", "itil_4dim", "itil_34prakt", "itil_reakce"] },
+    ]
+  },
+  {
+    num: 9,
+    title: "Podnikové informační systémy",
+    literatura: "Basl & Blažíček 2012; Laudon & Laudon 2019",
+    subchapters: [
+      { title: "Klíčové aplikace — ERP, CRM, BI, SCM, MES",
+        taskIds: ["pis_evoluce", "pis_moduly", "pis_finance", "pis_logistika",
+                  "pis_crm", "pis_scm", "pis_mes"] },
+      { title: "Implementace podnikových IS",
+        taskIds: ["pis_impl_etapy", "pis_proto", "pis_custom",
+                  "pis_kriteria", "mm_iasw"] },
+      { title: "Přínosy, rizika a trendy podnikových IS",
+        taskIds: ["pis_trh", "pis_premise", "pis_cloud3", "pis_soa", "pis_trendy"] },
+    ]
+  },
+  {
+    num: 10,
+    title: "Analýza a návrh informačních systémů",
+    literatura: "Bruckner et al. 2012",
+    subchapters: [
+      { title: "Propojení IT a businessu",
+        taskIds: ["mm_alignment", "mm_principy", "mm_dimenze", "mm_faze", "mm_outsource",
+                  "arch_togaf", "arch_zachman", "arch_mda", "arch_soa", "arch_micro", "arch_layers"] },
+      { title: "Modelování business procesů",
+        taskIds: ["pr_bpmn_basic", "pr_bpmn_pools", "pr_bpmn_artif",
+                  "pr_epc", "pr_epc_vs_bpmn", "pr_dfd", "pr_raci", "pr_kbpr", "pr_cmm"] },
+    ]
+  },
+  {
+    num: 11,
+    title: "Bezpečnost informačních systémů",
+    literatura: "Northcutt 2005; Pavlíček & Sedláček 2020",
+    subchapters: [
+      { title: "Kryptografie, kryptografická primitiva a protokoly, šifrování, asymetrická kryptografie",
+        taskIds: ["sec_kryptolog", "sec_cile", "sec_primitiva", "sec_cia", "sec_kerckhoffs",
+                  "sec_proud_blok", "sec_vernam", "sec_sp_sit", "sec_mody", "sec_aead",
+                  "sec_hash", "sec_hash_vlast", "sec_mac",
+                  "sec_asym", "sec_dh", "sec_fs"] },
+      { title: "Certifikáty, elektronické podpisy, eIDAS (podepisování a identifikace)",
+        taskIds: ["sec_podpis", "sec_cert", "sec_eidas", "sec_3podpisy"] },
+      { title: "Identifikace a autentizace, hesla, vícefaktorová autentizace",
+        taskIds: ["sec_5pojmu", "sec_doklady", "sec_3faktory", "sec_mfa", "sec_hesla", "sec_modely"] },
+      { title: "Segmentace sítě a její provoz z pohledu bezpečnosti",
+        taskIds: ["sec_fw", "sec_proxy", "sec_nat", "sec_ids", "sec_honey", "sec_tls", "sec_vpn",
+                  "sec_zt", "sec_owasp", "sec_gdpr", "sec_nis2"] },
+    ]
+  },
+];
+
+// ============================================================================
+// STATE & RENDERING
+// ============================================================================
+
+const targetDates = {
+  prijmacky: new Date("2026-06-18"),
+  statnice: new Date("2026-06-22"),
+  start: new Date("2026-05-19")
+};
+
+let state = JSON.parse(localStorage.getItem("checklistStateV2") || "{}");
+
+const taskIndex = {};
+plan.forEach(wk => {
+  wk.days.forEach(d => {
+    (d.subtasks || []).forEach(st => {
+      taskIndex[st.id] = { date: d.date, dayTitle: d.title, text: st.text };
+    });
+  });
+});
+
+function toggle(id) {
+  state[id] = !state[id];
+  localStorage.setItem("checklistStateV2", JSON.stringify(state));
+  renderAll();
+}
+
+function renderByDay() {
+  const container = document.getElementById("view-by-day");
+  container.innerHTML = "";
+
+  plan.forEach((wk, wIdx) => {
+    if (wk.milestone) {
+      const div = document.createElement("div");
+      div.className = "milestone" + (wk.week.includes("Týden 5") ? " success" : "");
+      div.innerHTML = `<div style="font-size:14px; opacity:0.9; margin-bottom:4px">${wk.theme}</div><div>${wk.week}</div>`;
+      container.appendChild(div);
+    }
+
+    const weekEl = document.createElement("div");
+    weekEl.className = "week";
+    const weekHeader = document.createElement("div");
+    weekHeader.className = "week-header";
+    weekHeader.onclick = () => weekEl.classList.toggle("collapsed");
+
+    let totalSubs = 0, doneSubs = 0;
+    wk.days.forEach((d) => {
+      if (state[d.id]) doneSubs++;
+      totalSubs++;
+      (d.subtasks || []).forEach((st) => {
+        totalSubs++;
+        if (state[st.id]) doneSubs++;
+      });
+    });
+
+    weekHeader.innerHTML = `
+      <div>
+        <div class="week-title">${wk.week}</div>
+        <div class="week-progress">${wk.theme}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="week-progress">${doneSubs} / ${totalSubs}</div>
+        <div class="week-toggle">▼</div>
+      </div>
+    `;
+    weekEl.appendChild(weekHeader);
+
+    const content = document.createElement("div");
+    content.className = "week-content";
+
+    wk.days.forEach((d) => {
+      const dayEl = document.createElement("div");
+      dayEl.className = "day" + (state[d.id] ? " completed" : "");
+
+      const header = document.createElement("div");
+      header.className = "day-header";
+      header.innerHTML = `
+        <input type="checkbox" class="day-checkbox" ${state[d.id] ? "checked" : ""} onchange="toggle('${d.id}')">
+        <div class="day-content">
+          <div class="day-date">${d.date}</div>
+          <div class="day-title">${d.title}</div>
+          <div class="day-material">📖 ${d.material}</div>
+        </div>
+      `;
+      dayEl.appendChild(header);
+
+      if (d.subtasks && d.subtasks.length > 0) {
+        const subs = document.createElement("div");
+        subs.className = "subtasks";
+        d.subtasks.forEach((st) => {
+          const subEl = document.createElement("div");
+          subEl.className = "subtask" + (state[st.id] ? " completed" : "");
+          subEl.innerHTML = `
+            <input type="checkbox" id="day_${st.id}" ${state[st.id] ? "checked" : ""} onchange="toggle('${st.id}')">
+            <label for="day_${st.id}">${st.text}</label>
+          `;
+          subs.appendChild(subEl);
+        });
+        dayEl.appendChild(subs);
+      }
+
+      content.appendChild(dayEl);
+    });
+
+    weekEl.appendChild(content);
+    container.appendChild(weekEl);
+  });
+}
+
+function renderByTopic() {
+  const container = document.getElementById("view-by-topic");
+  container.innerHTML = "";
+
+  topics.forEach((topic) => {
+    let totalTasks = 0, doneTasks = 0;
+    topic.subchapters.forEach(sub => {
+      sub.taskIds.forEach(tid => {
+        totalTasks++;
+        if (state[tid]) doneTasks++;
+      });
+    });
+
+    const topicEl = document.createElement("div");
+    topicEl.className = "topic";
+
+    const header = document.createElement("div");
+    header.className = "topic-header";
+    header.onclick = () => topicEl.classList.toggle("collapsed");
+    header.innerHTML = `
+      <div>
+        <div class="topic-title">${topic.num}. ${topic.title}</div>
+        <div class="topic-meta">📚 ${topic.literatura}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="topic-progress">${doneTasks} / ${totalTasks}</div>
+        <div class="topic-toggle">▼</div>
+      </div>
+    `;
+    topicEl.appendChild(header);
+
+    const content = document.createElement("div");
+    content.className = "topic-content";
+
+    topic.subchapters.forEach(sub => {
+      const subEl = document.createElement("div");
+      subEl.className = "subchapter";
+
+      let subDone = 0;
+      sub.taskIds.forEach(tid => { if (state[tid]) subDone++; });
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "subchapter-title";
+      titleEl.innerHTML = `${sub.title} <span class="subchapter-count">${subDone}/${sub.taskIds.length}</span>`;
+      subEl.appendChild(titleEl);
+
+      sub.taskIds.forEach(tid => {
+        const ref = taskIndex[tid];
+        if (!ref) {
+          console.warn("Missing taskId reference:", tid);
+          return;
+        }
+        const taskEl = document.createElement("div");
+        taskEl.className = "topic-task" + (state[tid] ? " completed" : "");
+        taskEl.innerHTML = `
+          <input type="checkbox" id="topic_${tid}" ${state[tid] ? "checked" : ""} onchange="toggle('${tid}')">
+          <label for="topic_${tid}">${ref.text}<span class="task-date">${ref.date}</span></label>
+        `;
+        subEl.appendChild(taskEl);
+      });
+
+      content.appendChild(subEl);
+    });
+
+    topicEl.appendChild(content);
+    container.appendChild(topicEl);
+  });
+}
+
+function renderAll() {
+  renderByDay();
+  renderByTopic();
+  updateProgress();
+}
+
+function updateProgress() {
+  const allIds = new Set();
+  plan.forEach(wk => {
+    wk.days.forEach(d => {
+      allIds.add(d.id);
+      (d.subtasks || []).forEach(st => allIds.add(st.id));
+    });
+  });
+
+  let total = 0, done = 0;
+  allIds.forEach(id => {
+    total++;
+    if (state[id]) done++;
+  });
+
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressText").textContent = `${done} / ${total} (${pct}%)`;
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statDone").textContent = done;
+
+  const now = new Date();
+  const daysToPrijmacky = Math.ceil((targetDates.prijmacky - now) / (1000 * 60 * 60 * 24));
+  const daysToStatnice = Math.ceil((targetDates.statnice - now) / (1000 * 60 * 60 * 24));
+
+  const prijBox = document.getElementById("countdownPrijmacky");
+  prijBox.querySelector(".countdown-value").textContent = daysToPrijmacky > 0 ? daysToPrijmacky + " dní" : "DNES/PROBĚHLO";
+  if (daysToPrijmacky <= 7 && daysToPrijmacky > 0) prijBox.classList.add("urgent");
+
+  const statBox = document.getElementById("countdownStatnice");
+  statBox.querySelector(".countdown-value").textContent = daysToStatnice > 0 ? daysToStatnice + " dní" : "DNES/PROBĚHLO";
+  if (daysToStatnice <= 7 && daysToStatnice > 0) statBox.classList.add("urgent");
+
+  document.getElementById("statDays").textContent = daysToPrijmacky > 0 ? daysToPrijmacky : 0;
+
+  const remaining = total - done;
+  const pace = daysToPrijmacky > 0 ? (remaining / daysToPrijmacky).toFixed(1) : "—";
+  document.getElementById("statPace").textContent = pace;
+}
+
+function switchView(name) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.view === name));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + name));
+}
+
+function expandAll() {
+  document.querySelectorAll(".week, .topic").forEach(w => w.classList.remove("collapsed"));
+}
+function collapseAll() {
+  document.querySelectorAll(".week, .topic").forEach(w => w.classList.add("collapsed"));
+}
+function resetAll() {
+  if (confirm("Opravdu chceš resetovat celý postup? Tato akce je nevratná.")) {
+    state = {};
+    localStorage.setItem("checklistStateV2", "{}");
+    renderAll();
+  }
+}
+function exportProgress() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `checklist-postup-${new Date().toISOString().split("T")[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importProgress(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (confirm("Importovat postup? Současný postup bude přepsán.")) {
+        state = imported;
+        localStorage.setItem("checklistStateV2", JSON.stringify(state));
+        renderAll();
+      }
+    } catch (err) {
+      alert("Chyba při importu: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+renderAll();
+setInterval(updateProgress, 60000);
+</script>
+</body>
+</html>
